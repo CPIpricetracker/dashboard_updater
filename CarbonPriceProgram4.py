@@ -76,11 +76,20 @@ os.chdir(repo_loc)
 
 #create output document
 f = open('carbon_prices_test.csv','a')
-f.write('\n')
 f.write(timevar[0])
 f.write(',')
 f.write(str(pricevar))
 f.close()
+
+#Stage files for commit
+repo.git.add('csv/carbon_prices_test.csv')
+
+#Commit the changes
+repo.git.commit(m ='Latest carbon price update')
+
+#Push the repo
+#note: to automate login you must follow the instructions here: https://help.github.com/articles/set-up-git
+repo.git.push()
 
 #pull timestamp
 pulltime = datetime.datetime.now()
@@ -115,13 +124,3 @@ server.starttls()
 server.login(username,password)
 server.sendmail(fromaddr, toaddrs, msg)
 server.quit()
-
-#Stage files for commit
-repo.git.add('csv/carbon_prices_test.csv')
-
-#Commit the changes
-repo.git.commit(m ='Latest carbon price update')
-
-#Push the repo
-#note: to automate login you must follow the instructions here: https://help.github.com/articles/set-up-git
-repo.git.push()
