@@ -1,6 +1,6 @@
 #Import libraries
 import urllib2
-from bs4 import BeautifulSoup
+from BeautifulSoup import BeautifulSoup
 import datetime
 import smtplib
 import git
@@ -27,16 +27,16 @@ errorvar = "Vintage wasn't found"
 
 #Find and record "last" price
 price_idx = -1
-for idx, th in enumerate(table.find_all('th')):
+for idx, th in enumerate(table.findAll('th')):
     # Find the column index of price
-    if th.get_text() == 'Last':
+    if th.getText() == 'Last':
         price_idx = idx
         break
 
 pricevar = 0
-for tr in table.find_all('tr'):
+for tr in table.findAll('tr'):
     # Extract the content of each column in a list
-    td_contents = [td.get_text() for td in tr.find_all('td')]
+    td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Last column
     if 'Dec13' in td_contents:
         pricevar = td_contents[price_idx]
@@ -49,16 +49,16 @@ for tr in table.find_all('tr'):
 
 #Find and record time
 time_idx = -1
-for idx, th in enumerate(table.find_all('th')):
+for idx, th in enumerate(table.findAll('th')):
     # Find the column index of Time
-    if th.get_text() == 'Time':
+    if th.getText() == 'Time':
         time_idx = idx
         break
 
 timevar = []
-for tr in table.find_all('tr'):
+for tr in table.findAll('tr'):
     # Extract the content of each column in a list
-    td_contents = [td.get_text() for td in tr.find_all('td')]
+    td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Time column
     if 'Dec13' in td_contents:
         time_str = td_contents[time_idx]
@@ -76,10 +76,10 @@ os.chdir(repo_loc)
 
 #create output document
 f = open('carbon_prices_test.csv','a')
+f.write('\n')
 f.write(timevar[0])
 f.write(',')
 f.write(str(pricevar))
-f.write('\n')
 f.close()
 
 #pull timestamp
@@ -117,7 +117,7 @@ server.sendmail(fromaddr, toaddrs, msg)
 server.quit()
 
 #Stage files for commit
-repo.git.add('carbon_prices_test.csv')
+repo.git.add('csv/carbon_prices_test.csv')
 
 #Commit the changes
 repo.git.commit(m ='Latest carbon price update')
