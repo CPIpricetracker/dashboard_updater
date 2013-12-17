@@ -64,7 +64,7 @@ for tr in table.findAll('tr'):
         time_str = td_contents[time_idx]
         # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
         time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
-        timevar.append(datetime.datetime.strftime(time_obj,'%x'))
+        timevar.append(datetime.datetime.strftime(time_obj,'%M/%d/%Y'))
 
 #if date was not found, print "1/1/1900" and record the error
 if timevar == []:
