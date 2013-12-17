@@ -16,7 +16,7 @@ repo_loc = '/users/CPIGuest/Documents/GitHub/dashboard/csv'
 
 #Update repo
 repo.git.reset()
-repo.git.checkout() #maybe git fetch origin
+repo.git.pull() #maybe git fetch origin
 
 #create soup
 soup = BeautifulSoup(urllib2.urlopen('https://www.theice.com/marketdata/DelayedMarkets.shtml?productId=3418&hubId=4080').read())
@@ -64,7 +64,7 @@ for tr in table.findAll('tr'):
         time_str = td_contents[time_idx]
         # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
         time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
-        timevar.append(datetime.datetime.strftime(time_obj,'%M/%d/%Y'))
+        timevar.append(datetime.datetime.strftime(time_obj,'%m/%d/%Y'))
 
 #if date was not found, print "1/1/1900" and record the error
 if timevar == []:
@@ -76,6 +76,7 @@ os.chdir(repo_loc)
 
 #create output document
 f = open('carbon_prices_test.csv','a')
+f.write('\n')
 f.write(timevar[0])
 f.write(',')
 f.write(str(pricevar))
