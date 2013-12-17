@@ -10,17 +10,13 @@ import os
 errorvar = "no error"
 
 #Define repo location & url locations
-repo = git.Repo('/users/Tucker/Documents/GitHub/Cal-Carbon-Dash-automation')
-url = "https://github.com/twillsie/Cal-Carbon-Dash-automation"
-repo_loc = '/users/Tucker/Documents/GitHub/Cal-Carbon-Dash-automation'
-    #current_repository = git.Repo.clone_from(url,repo_loc)
+repo = git.Repo('/users/CPIGuest/Documents/GitHub/dashboard')
+url = "https://github.com/climatepolicy/dashboard"
+repo_loc = '/users/CPIGuest/Documents/GitHub/dashboard/csv'
 
 #Update repo
 repo.git.reset()
-repo.git.checkout()
-
-#make sure we are in the right folder
-os.chdir(repo_loc)
+repo.git.checkout() #maybe git fetch origin
 
 #create soup
 soup = BeautifulSoup(urllib2.urlopen('https://www.theice.com/marketdata/DelayedMarkets.shtml?productId=3418&hubId=4080').read())
@@ -75,8 +71,11 @@ if timevar == []:
     errorvar = "Vintage wasn't found"
     timevar = ['01/01/1900']
 
+#make sure we are in the right folder
+os.chdir(repo_loc)
+
 #create output document
-f = open('carbon_prices.csv','a')
+f = open('carbon_prices_test.csv','a')
 f.write(timevar[0])
 f.write(',')
 f.write(str(pricevar))
@@ -118,7 +117,7 @@ server.sendmail(fromaddr, toaddrs, msg)
 server.quit()
 
 #Stage files for commit
-repo.git.add('carbon_prices.csv')
+repo.git.add('carbon_prices_test.csv')
 
 #Commit the changes
 repo.git.commit(m ='Latest carbon price update')
