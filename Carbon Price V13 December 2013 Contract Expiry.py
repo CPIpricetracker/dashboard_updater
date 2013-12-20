@@ -38,7 +38,7 @@ for tr in table.findAll('tr'):
     # Extract the content of each column in a list
     td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Last column
-    if 'Dec14' in td_contents:
+    if 'Dec13' in td_contents:
         pricevar = td_contents[price_idx]
         errorvar = "no error"
         break
@@ -60,7 +60,7 @@ for tr in table.findAll('tr'):
     # Extract the content of each column in a list
     td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Time column
-    if 'Dec14' in td_contents:
+    if 'Dec13' in td_contents:
         time_str = td_contents[time_idx]
         # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
         time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
@@ -70,7 +70,6 @@ for tr in table.findAll('tr'):
 if timevar == []:
     errorvar = "Vintage wasn't found"
     timevar = ['01/01/1900']
-
 
 
 
@@ -87,13 +86,10 @@ for tr in table.findAll('tr'):
     # Extract the content of each column in a list
     td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Last column
-    if 'Dec14' in td_contents:
+    if 'Dec13' in td_contents:
         volvar = td_contents[volume_idx]
         errorvar = "no error"
         break
-
-
-    
 
 
 
@@ -101,17 +97,15 @@ for tr in table.findAll('tr'):
 os.chdir(repo_loc)
 
 #create output document
-f = open('carbon_prices_v13 contract dec 2014.csv','a')
+f = open('carbon_prices_v13 contract dec 2013.csv','a')
 f.write('\n')
 f.write(timevar[0])
 f.write(',')
 f.write(str(pricevar))
-f.write(',')
-f.write(str(volvar))
 f.close()
 
 #Stage files for commit
-repo.git.add('csv/carbon_prices_v13 contract dec 2014.csv')
+repo.git.add('csv/carbon_prices_v13 contract dec 2013.csv')
 
 #Commit the changes
 repo.git.commit(m ='Latest carbon price update')
@@ -132,7 +126,7 @@ if errorvar == "no error":
         "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
         "Subject: Status of upload",
         "",
-        "Upload successful - todays upload was " +str(pricevar)+", "+str(timevar[0])+ ". The time of the pull was "+str(pulltime)
+        "Upload successful - todays upload was " +str(pricevar)+", "+str(timevar[0])+ ", "+str(volvar)+ ". The time of the pull was "+str(pulltime)
         ])
 else:
     msg = "\r\n".join([
