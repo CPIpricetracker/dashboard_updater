@@ -38,7 +38,7 @@ for tr in table.findAll('tr'):
     # Extract the content of each column in a list
     td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Last column
-    if 'Dec13' in td_contents:
+    if 'Dec14' in td_contents:
         pricevar = td_contents[price_idx]
         errorvar = "no error"
         break
@@ -60,7 +60,7 @@ for tr in table.findAll('tr'):
     # Extract the content of each column in a list
     td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Time column
-    if 'Dec13' in td_contents:
+    if 'Dec14' in td_contents:
         time_str = td_contents[time_idx]
         # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
         time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
@@ -71,19 +71,47 @@ if timevar == []:
     errorvar = "Vintage wasn't found"
     timevar = ['01/01/1900']
 
+
+
+
+#Find and record volume traded
+volume_idx = -1
+for idx, th in enumerate(table.findAll('th')):
+    # Find the column index of price
+    if th.getText() == 'Volume':
+        volume_idx = idx
+        break
+
+volvar = 0
+for tr in table.findAll('tr'):
+    # Extract the content of each column in a list
+    td_contents = [td.getText() for td in tr.findAll('td')]
+    # If this row matches our requirement, take the Last column
+    if 'Dec14' in td_contents:
+        volvar = td_contents[volume_idx]
+        errorvar = "no error"
+        break
+
+
+    
+
+
+
 #make sure we are in the right folder
 os.chdir(repo_loc)
 
 #create output document
-f = open('carbon_prices.csv','a')
+f = open('carbon_prices_v13 contract dec 2014.csv','a')
 f.write('\n')
 f.write(timevar[0])
 f.write(',')
 f.write(str(pricevar))
+f.write(',')
+f.write(str(volvar))
 f.close()
 
 #Stage files for commit
-repo.git.add('csv/carbon_prices.csv')
+repo.git.add('csv/carbon_prices_v13 contract dec 2014.csv')
 
 #Commit the changes
 repo.git.commit(m ='Latest carbon price update')
@@ -101,7 +129,7 @@ toaddrs = 'tucker.willsie@cpisf.org'
 if errorvar == "no error":
     msg = "\r\n".join([
         "From: Calcarbondash@gmail.com",
-        "To: Tucker.willsie@cpisf.org",
+        "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
         "Subject: Status of upload",
         "",
         "Upload successful - todays upload was " +str(pricevar)+", "+str(timevar[0])+ ". The time of the pull was "+str(pulltime)
@@ -109,7 +137,7 @@ if errorvar == "no error":
 else:
     msg = "\r\n".join([
         "From: Calcarbondash@gmail.com",
-        "To: Tucker.willsie@cpisf.org",
+        "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
         "Subject: Status of upload",
         "",
         "Upload error - The time of the pull was "+str(pulltime)+" and the error was: "+errorvar
