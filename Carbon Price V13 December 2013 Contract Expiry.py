@@ -102,6 +102,8 @@ f.write('\n')
 f.write(timevar[0])
 f.write(',')
 f.write(str(pricevar))
+f.write(',')
+f.write(str(volvar))
 f.close()
 
 #Stage files for commit
@@ -124,7 +126,7 @@ if errorvar == "no error":
     msg = "\r\n".join([
         "From: Calcarbondash@gmail.com",
         "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
-        "Subject: Status of upload",
+        "Subject: Status of upload V13 Dec 13",
         "",
         "Upload successful - todays upload was " +str(pricevar)+", "+str(timevar[0])+ ", "+str(volvar)+ ". The time of the pull was "+str(pulltime)
         ])
@@ -132,7 +134,7 @@ else:
     msg = "\r\n".join([
         "From: Calcarbondash@gmail.com",
         "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
-        "Subject: Status of upload",
+        "Subject: Status of upload V13 Dec 13",
         "",
         "Upload error - The time of the pull was "+str(pulltime)+" and the error was: "+errorvar
         ])

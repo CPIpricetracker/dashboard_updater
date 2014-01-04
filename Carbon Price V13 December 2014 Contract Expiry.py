@@ -25,6 +25,35 @@ table = soup.find('table', {"class":"data default borderless"})
 #throw an error unless the right price is found
 errorvar = "Vintage wasn't found"
 
+#Find and record time
+time_idx = -1
+for idx, th in enumerate(table.findAll('th')):
+    # Find the column index of Time
+    if th.getText() == 'Time':
+        time_idx = idx
+        break
+
+timevar = []
+for tr in table.findAll('tr'):
+    # Extract the content of each column in a list
+    td_contents = [td.getText() for td in tr.findAll('td')]
+    # If this row matches our requirement, take the Time column
+    if 'Dec14' in td_contents:
+        time_str = td_contents[time_idx]
+        if time_str != 'GMT':     
+            # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
+            time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
+            timevar.append(datetime.datetime.strftime(time_obj,'%m/%d/%Y')) 
+        else:     
+            # This will capture instances when the timestamp is not in our desired format
+            errorvar = "Invalid timestamp format"
+            timevar = ['01/01/1900']
+    else: 
+        # this will capture when we cannot find a the particular contract period that we're searching for
+        errorvar = "Vintage wasn't found"  
+        timevar = ['01/01/1900']
+        
+
 #Find and record "last" price
 price_idx = -1
 for idx, th in enumerate(table.findAll('th')):
@@ -45,35 +74,6 @@ for tr in table.findAll('tr'):
 
 
     
-
-
-#Find and record time
-time_idx = -1
-for idx, th in enumerate(table.findAll('th')):
-    # Find the column index of Time
-    if th.getText() == 'Time':
-        time_idx = idx
-        break
-
-timevar = []
-for tr in table.findAll('tr'):
-    # Extract the content of each column in a list
-    td_contents = [td.getText() for td in tr.findAll('td')]
-    # If this row matches our requirement, take the Time column
-    if 'Dec14' in td_contents:
-        time_str = td_contents[time_idx]
-        # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
-        time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
-        timevar.append(datetime.datetime.strftime(time_obj,'%m/%d/%Y'))
-
-#if date was not found, print "1/1/1900" and record the error
-if timevar == []:
-    errorvar = "Vintage wasn't found"
-    timevar = ['01/01/1900']
-
-
-
-
 #Find and record volume traded
 volume_idx = -1
 for idx, th in enumerate(table.findAll('th')):
@@ -91,10 +91,6 @@ for tr in table.findAll('tr'):
         volvar = td_contents[volume_idx]
         errorvar = "no error"
         break
-
-
-    
-
 
 
 #make sure we are in the right folder
@@ -130,7 +126,7 @@ if errorvar == "no error":
     msg = "\r\n".join([
         "From: Calcarbondash@gmail.com",
         "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
-        "Subject: Status of upload",
+        "Subject: Status of upload V13 Dec 14",
         "",
         "Upload successful - todays upload was " +str(pricevar)+", "+str(timevar[0])+ ", "+str(volvar)+ ". The time of the pull was "+str(pulltime)
         ])
@@ -138,7 +134,7 @@ else:
     msg = "\r\n".join([
         "From: Calcarbondash@gmail.com",
         "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
-        "Subject: Status of upload",
+        "Subject: Status of upload V13 Dec 14",
         "",
         "Upload error - The time of the pull was "+str(pulltime)+" and the error was: "+errorvar
         ])
