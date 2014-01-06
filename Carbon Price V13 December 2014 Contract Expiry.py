@@ -42,7 +42,7 @@ for idx, th in enumerate(table.findAll('th')):
         time_idx = idx
 
 
-#Find and record "last" price
+#Find and record "last" price and volume
 pricevar = 0
 volvar = 0
 for tablerow in table.findAll('tr'):
@@ -54,7 +54,6 @@ for tablerow in table.findAll('tr'):
         volvar = td_contents[volume_idx]
         errorvar = "no error"
         break
-
         
 
 timevar = []
@@ -62,7 +61,7 @@ for tr in table.findAll('tr'):
     # Extract the content of each column in a list
     td_contents = [td.getText() for td in tr.findAll('td')]
     # If this row matches our requirement, take the Time column
-    if 'Dec14' in td_contents:
+    if td_contents[contract_idx]=='Dec14':
         time_str = td_contents[time_idx]
         if time_str != 'GMT':     
             # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
