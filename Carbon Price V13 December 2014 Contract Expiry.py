@@ -25,13 +25,37 @@ table = soup.find('table', {"class":"data default borderless"})
 #throw an error unless the right price is found
 errorvar = "Vintage wasn't found"
 
-#Find and record time
+#Find and record contract, time, price, and volume column locations (i.e. indexes)
+contract_idx = -1
+price_idx = -1
+volume_idx = -1
 time_idx = -1
 for idx, th in enumerate(table.findAll('th')):
     # Find the column index of Time
-    if th.getText() == 'Time':
+    if th.getText() == 'Contract':
+        contract_idx = idx
+    elif th.getText() == 'Last':
+        price_idx = idx
+    elif th.getText() == 'Volume':
+        volume_idx = idx
+    elif th.getText() == 'Time':
         time_idx = idx
+
+
+#Find and record "last" price
+pricevar = 0
+volvar = 0
+for tablerow in table.findAll('tr'):
+    # Extract the content of each column in a list
+    td_contents = [td.getText() for cell in tablerow.findAll('td')]
+    # If this row matches our requirement, take the Last column
+    if td_contents[contract_idx]=='Dec14':
+        pricevar = td_contents[price_idx]
+        volvar = td_contents[volume_idx]
+        errorvar = "no error"
         break
+
+        
 
 timevar = []
 for tr in table.findAll('tr'):
@@ -53,44 +77,6 @@ for tr in table.findAll('tr'):
         errorvar = "Vintage wasn't found"  
         timevar = ['01/01/1900']
         
-
-#Find and record "last" price
-price_idx = -1
-for idx, th in enumerate(table.findAll('th')):
-    # Find the column index of price
-    if th.getText() == 'Last':
-        price_idx = idx
-        break
-
-pricevar = 0
-for tr in table.findAll('tr'):
-    # Extract the content of each column in a list
-    td_contents = [td.getText() for td in tr.findAll('td')]
-    # If this row matches our requirement, take the Last column
-    if 'Dec14' in td_contents:
-        pricevar = td_contents[price_idx]
-        errorvar = "no error"
-        break
-
-
-    
-#Find and record volume traded
-volume_idx = -1
-for idx, th in enumerate(table.findAll('th')):
-    # Find the column index of price
-    if th.getText() == 'Volume':
-        volume_idx = idx
-        break
-
-volvar = 0
-for tr in table.findAll('tr'):
-    # Extract the content of each column in a list
-    td_contents = [td.getText() for td in tr.findAll('td')]
-    # If this row matches our requirement, take the Last column
-    if 'Dec14' in td_contents:
-        volvar = td_contents[volume_idx]
-        errorvar = "no error"
-        break
 
 
 #make sure we are in the right folder
