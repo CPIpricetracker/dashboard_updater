@@ -8,7 +8,7 @@ import os
 import csv
 
 #create var that will track errors
-errorvar = "no error"
+errorvar = []
 
 #Define repo location & url locations
 repo = git.Repo('/users/CPIGuest/Documents/GitHub/dashboard')
@@ -19,7 +19,8 @@ repo_loc = '/users/CPIGuest/Documents/GitHub/dashboard/csv'
 repo.git.reset()
 repo.git.pull() #maybe git fetch origin
 
-# open the github CSV file
+#Read the last row already on the chart so that we can check to see if the ICE website has updated data
+#and we can use the previous price if there is zero trading volume today
 with open('/Users/cpiguest/Documents/GitHub/dashboard/csv/carbon_prices_v13 contract dec 2014.csv','r') as f:
     reader = csv.reader(f)
     lastline = reader.next()
@@ -29,13 +30,13 @@ with open('/Users/cpiguest/Documents/GitHub/dashboard/csv/carbon_prices_v13 cont
 #create soup
 soup = BeautifulSoup(urllib2.urlopen('https://www.theice.com/marketdata/DelayedMarkets.shtml?productId=3418&hubId=4080').read())
 table = soup.find('table', {"class":"data default borderless"})
+
+#pull the "last update time" from the ICE website and convert it to PST (-8 hours)
 lastupdatetime = soup.find('div', {"class":"updateTime"})
 lastupdatetimetext = lastupdatetime.getText()
-lastupdatetime_obj = datetime.datetime.strptime(lastupdatetimetext,'Last update time:%a %b %d %H:%M:%S EST %Y GMT')
-lastupdatevar = datetime.datetime.strftime(lastupdatetime_obj,'%m/%d/%Y')
-
-#throw an error unless the right price is found
-errorvar = []
+lastupdatetime_obj = datetime.datetime.strptime(lastupdatetimetext,'Last update time:&nbsp;%a %b %d %H:%M:%S EST %Y GMT')
+lastupdatetime_timezone_correction_obj = lastupdatetime_obj-datetime.timedelta(hours=8)
+lastupdatevar = datetime.datetime.strftime(lastupdatetime_timezone_correction_obj,'%m/%d/%Y')
 
 #Find and record contract, time, price, and volume column locations (i.e. indexes)
 price_idx = -1
@@ -51,12 +52,15 @@ for idx, th in enumerate(table.findAll('th')):
         time_idx = idx
 
 # this defines the errors in case the script is unable to find the price, volume, or time columns within the table (which it will later use as reference points)
-if price_idx == -1
+if price_idx == -1:
     errorvar.append('Last (price) column not found')
-if volume_idx == -1
+    ##jump to email function
+if volume_idx == -1:
     errorvar.append('Volume column not found')
-if time_idx == -1
+    ##jump to email function
+if time_idx == -1:
     errorvar.append('Time column not found')
+    ##jump to email function
     
 #Find and record "last" price, volume, and time
 pricevar = 0
@@ -71,9 +75,10 @@ for tablerow in table.findAll('tr'):
         volvar = td_contents[volume_idx]
         time_str = td_contents[time_idx]
         if time_str != 'GMT':     
-            # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
+            # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object and convert from GMT to PST
             time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
-            timevar = datetime.datetime.strftime(time_obj,'%m/%d/%Y') 
+            time_timezone_correction_obj = time_obj-datetime.timedelta(hours=8)
+            timevar = datetime.datetime.strftime(time_timezone_correction_obj,'%m/%d/%Y') 
         else:     
             # This will capture instances when the timestamp is not in our desired format
             errorvar = "Invalid timestamp format"
