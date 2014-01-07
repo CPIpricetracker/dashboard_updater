@@ -5,6 +5,7 @@ import datetime
 import smtplib
 import git
 import os
+import csv
 
 #create var that will track errors
 errorvar = "no error"
@@ -18,73 +19,79 @@ repo_loc = '/users/CPIGuest/Documents/GitHub/dashboard/csv'
 repo.git.reset()
 repo.git.pull() #maybe git fetch origin
 
+# open the github CSV file
+with open('/Users/cpiguest/Documents/GitHub/dashboard/csv/carbon_prices_v13 contract dec 2014.csv','r') as f:
+    reader = csv.reader(f)
+    lastline = reader.next()
+    for line in reader:
+        lastline = line
+            
 #create soup
 soup = BeautifulSoup(urllib2.urlopen('https://www.theice.com/marketdata/DelayedMarkets.shtml?productId=3418&hubId=4080').read())
 table = soup.find('table', {"class":"data default borderless"})
+lastupdatetime = soup.find('div', {"class":"updateTime"})
+lastupdatetimetext = lastupdatetime.getText()
+lastupdatetime_obj = datetime.datetime.strptime(lastupdatetimetext,'Last update time:%a %b %d %H:%M:%S EST %Y GMT')
+lastupdatevar = datetime.datetime.strftime(lastupdatetime_obj,'%m/%d/%Y')
 
 #throw an error unless the right price is found
-errorvar = "Vintage wasn't found"
+errorvar = []
 
 #Find and record contract, time, price, and volume column locations (i.e. indexes)
-contract_idx = -1
 price_idx = -1
 volume_idx = -1
 time_idx = -1
 for idx, th in enumerate(table.findAll('th')):
     # Find the column index of Time
-    if th.getText() == 'Contract':
-        contract_idx = idx
-    elif th.getText() == 'Last':
+    if th.getText() == 'Last':
         price_idx = idx
     elif th.getText() == 'Volume':
         volume_idx = idx
     elif th.getText() == 'Time':
         time_idx = idx
 
-
-#Find and record "last" price and volume
+# this defines the errors in case the script is unable to find the price, volume, or time columns within the table (which it will later use as reference points)
+if price_idx == -1
+    errorvar.append('Last (price) column not found')
+if volume_idx == -1
+    errorvar.append('Volume column not found')
+if time_idx == -1
+    errorvar.append('Time column not found')
+    
+#Find and record "last" price, volume, and time
 pricevar = 0
 volvar = 0
+timevar = ''
 for tablerow in table.findAll('tr'):
     # Extract the content of each column in a list
-    td_contents = [td.getText() for cell in tablerow.findAll('td')]
+    td_contents = [cell.getText() for cell in tablerow.findAll('td')]
     # If this row matches our requirement, take the Last column
-    if td_contents[contract_idx]=='Dec14':
+    if 'Dec14' in td_contents:
         pricevar = td_contents[price_idx]
         volvar = td_contents[volume_idx]
-        errorvar = "no error"
-        break
-        
-
-timevar = []
-for tr in table.findAll('tr'):
-    # Extract the content of each column in a list
-    td_contents = [td.getText() for td in tr.findAll('td')]
-    # If this row matches our requirement, take the Time column
-    if td_contents[contract_idx]=='Dec14':
         time_str = td_contents[time_idx]
         if time_str != 'GMT':     
             # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object
             time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
-            timevar.append(datetime.datetime.strftime(time_obj,'%m/%d/%Y')) 
+            timevar = datetime.datetime.strftime(time_obj,'%m/%d/%Y') 
         else:     
             # This will capture instances when the timestamp is not in our desired format
             errorvar = "Invalid timestamp format"
-            timevar = ['01/01/1900']
-    else: 
-        # this will capture when we cannot find a the particular contract period that we're searching for
-        errorvar = "Vintage wasn't found"  
-        timevar = ['01/01/1900']
-        
+            timevar = '01/01/1900'
+    if volvar == '0':
+        # conditional for taking the previous day's information if volume is zero - pricevar and volvar are based on CSV columns
+        pricevar = lastline[1]
+        timevar = lastline[0]
+     
 
-
+  
 #make sure we are in the right folder
 os.chdir(repo_loc)
 
 #create output document
 f = open('carbon_prices_v13 contract dec 2014.csv','a')
 f.write('\n')
-f.write(timevar[0])
+f.write(str(timevar))
 f.write(',')
 f.write(str(pricevar))
 f.write(',')
