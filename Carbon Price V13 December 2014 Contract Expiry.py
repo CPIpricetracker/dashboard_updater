@@ -1,3 +1,7 @@
+#--------------------------------------------------------------------------------
+# Step 1: Set up initial variables and libraries
+#--------------------------------------------------------------------------------
+
 #Import libraries
 import urllib2
 from BeautifulSoup import BeautifulSoup
@@ -10,6 +14,10 @@ import csv
 #create var that will track errors
 errorvar = []
 
+#temporarily create list of contract dates. Eventually this should probably be generated dynamically
+#or at least in a csv file that is read in the script
+contract_dates = ['Dec14']
+
 #Define repo location & url locations
 repo = git.Repo('/users/CPIGuest/Documents/GitHub/dashboard')
 url = "https://github.com/climatepolicy/dashboard"
@@ -21,7 +29,7 @@ repo.git.pull() #maybe git fetch origin
 
 #Read the last row already on the chart so that we can check to see if the ICE website has updated data
 #and we can use the previous price if there is zero trading volume today
-with open('/Users/cpiguest/Documents/GitHub/dashboard/csv/carbon_prices_v13 contract dec 2014.csv','r') as f:
+with open('/Users/cpiguest/Documents/GitHub/dashboard/csv/carbon_prices_v13 contract Dec14.csv','r') as f:
     reader = csv.reader(f)
     lastline = reader.next()
     for line in reader:
@@ -37,6 +45,10 @@ lastupdatetimetext = lastupdatetime.getText()
 lastupdatetime_obj = datetime.datetime.strptime(lastupdatetimetext,'Last update time:&nbsp;%a %b %d %H:%M:%S EST %Y GMT')
 lastupdatetime_timezone_correction_obj = lastupdatetime_obj-datetime.timedelta(hours=8)
 lastupdatevar = datetime.datetime.strftime(lastupdatetime_timezone_correction_obj,'%m/%d/%Y')
+
+#--------------------------------------------------------------------------------
+# Step 2: Identify correct columns in table and error check that they all exist
+#--------------------------------------------------------------------------------
 
 #Find and record contract, time, price, and volume column locations (i.e. indexes)
 price_idx = -1
@@ -61,7 +73,11 @@ if volume_idx == -1:
 if time_idx == -1:
     errorvar.append('Time column not found')
     ##jump to email function
-    
+
+#--------------------------------------------------------------------------------
+# Step 3: Iterate through all contract dates and pull price, volume and time for each
+#--------------------------------------------------------------------------------
+
 #Find and record "last" price, volume, and time
 pricevar = 0
 volvar = 0
@@ -87,14 +103,14 @@ for tablerow in table.findAll('tr'):
         # conditional for taking the previous day's information if volume is zero - pricevar and volvar are based on CSV columns
         pricevar = lastline[1]
         timevar = lastline[0]
-     
 
-  
-#make sure we are in the right folder
-os.chdir(repo_loc)
+#--------------------------------------------------------------------------------
+# Step 4-success: If values pass error checks, write them to file
+#--------------------------------------------------------------------------------
 
 #create output document
-f = open('carbon_prices_v13 contract dec 2014.csv','a')
+os.chdir(repo_loc) #make sure we are in the right folder
+f = open('carbon_prices_v13 contract Dec14.csv','a')
 f.write('\n')
 f.write(str(timevar))
 f.write(',')
@@ -103,8 +119,12 @@ f.write(',')
 f.write(str(volvar))
 f.close()
 
+#--------------------------------------------------------------------------------
+# Step 5: Commit changes to repo and write summary email with news of success or failure
+#--------------------------------------------------------------------------------
+
 #Stage files for commit
-repo.git.add('csv/carbon_prices_v13 contract dec 2014.csv')
+repo.git.add('csv/carbon_prices_v13 contract Dec14.csv')
 
 #Commit the changes
 repo.git.commit(m ='Latest carbon price update')
