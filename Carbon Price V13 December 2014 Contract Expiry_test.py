@@ -17,7 +17,8 @@ errorlist = []
 
 #temporarily create list of contract dates. Eventually this should probably be generated dynamically
 #or at least in a csv file that is read in the script
-contract_dates = ['Dec14','Jan14','Feb14','Mar14','Apr14','May14','Jun14','Jul14','Aug14']
+contract_dates = ['Dec14','Jan14']
+#,'Feb14','Mar14','Apr14','May14','Jun14','Jul14','Aug14'
 
 #Define repo location & url locations
 repo = git.Repo('/users/CPIGuest/Documents/GitHub/dashboard')
@@ -27,7 +28,7 @@ repo_loc = '/users/CPIGuest/Documents/GitHub/dashboard/csv'
 #Update repo
 repo.git.reset()
 repo.git.pull() #maybe git fetch origin
-			
+            
 #create soup
 soup = BeautifulSoup(urllib2.urlopen('https://www.theice.com/marketdata/DelayedMarkets.shtml?productId=3418&hubId=4080').read())
 table = soup.find('table', {"class":"data default borderless"})
@@ -44,21 +45,21 @@ lastupdatevar = datetime.datetime.strftime(lastupdatetime_timezone_correction_ob
 #--------------------------------------------------------
 for contract_date in contract_dates:
     # coding the creation of new CSVs for any contract periods that don't already exist
-    if exists('carbon_prices_v13 contract '+str(contract_date)+'.csv'):
-	donothing = 'ok'
-    else:
-	f = open('carbon_prices_v13 contract '+str(contract_date)+'.csv','a')
-	f.write('date,close,volume')
-	f.close
+#    if exists('carbon_prices_v13 contract '+str(contract_date)+'.csv'):
+#        donothing = 'ok'
+#    else:
+#        f = open('carbon_prices_v13 contract '+str(contract_date)+'.csv','a')
+#        f.write('date,close,volume')
+#        f.close
 
 #Read the last row already on the chart so that we can check to see if the ICE website has updated data
 #and we can use the previous price if there is zero trading volume today
     with open('/Users/cpiguest/Documents/GitHub/dashboard/csv/carbon_prices_v13 contract '+str(contract_date)+'.csv','r') as f:
-	reader = csv.reader(f)
-	lastline = reader.next()
-	for line in reader:
+        reader = csv.reader(f)
+        lastline = reader.next()
+        for line in reader:
             lastline = line
-			
+            
 #--------------------------------------------------------------------------------
 # Step 2: Identify correct columns in table and error check that they all exist
 #--------------------------------------------------------------------------------
@@ -69,23 +70,23 @@ for contract_date in contract_dates:
     time_idx = -1
     for idx, th in enumerate(table.findAll('th')):
     # Find the column index of Time
-	if th.getText() == 'Last':
+        if th.getText() == 'Last':
             price_idx = idx
-	elif th.getText() == 'Volume':
+        elif th.getText() == 'Volume':
             volume_idx = idx
         elif th.getText() == 'Time':
             time_idx = idx
 
 # this defines the errors in case the script is unable to find the price, volume, or time columns within the table (which it will later use as reference points)
     if price_idx == -1:
-	errorlist.append('Last (price) column not found')
-	##jump to email function
+        errorlist.append('Last (price) column not found')
+    ##jump to email function
     if volume_idx == -1:
-	errorlist.append('Volume column not found')
-	##jump to email function
+        errorlist.append('Volume column not found')
+    ##jump to email function
     if time_idx == -1:
-	errorlist.append('Time column not found')
-	##jump to email function
+        errorlist.append('Time column not found')
+    ##jump to email function
 
 #--------------------------------------------------------------------------------
 # Step 3: Iterate through all contract dates and pull price, volume and time for each contract
@@ -99,16 +100,16 @@ for contract_date in contract_dates:
     # Extract the content of each column in a list
         td_contents = [cell.getText() for cell in tablerow.findAll('td')]
         # If this row matches our requirement, take the Last column
-	if contract_date in td_contents:
+        if contract_date in td_contents:
             pricevar = td_contents[price_idx]
             volvar = td_contents[volume_idx]
             time_str = td_contents[time_idx]
-            if time_str != 'GMT':	 
+            if time_str != 'GMT':    
                 # This will capture the date in the form: "Thu Dec 05 16:26:24 EST 2013 GMT", convert to datetime object and convert from GMT to PST
                 time_obj = datetime.datetime.strptime(time_str,'%a %b %d %H:%M:%S EST %Y GMT')
                 time_timezone_correction_obj = time_obj-datetime.timedelta(hours=8)
                 timevar = datetime.datetime.strftime(time_timezone_correction_obj,'%m/%d/%Y') 
-            else:	 
+            else:    
                 # This will capture instances when the timestamp is not in our desired format
                 errorlist.append("Invalid timestamp format")
                 timevar = '01/01/1900'
@@ -135,7 +136,7 @@ for contract_date in contract_dates:
 
     #Stage files for commit
     repo.git.add('csv/carbon_prices_v13 contract '+str(contract_date)+'.csv')
-	
+    
 #--------------------------------------------------------------------------------
 # Step 5: Commit changes to repo and write summary email with news of success or failure
 #--------------------------------------------------------------------------------
@@ -160,20 +161,20 @@ fromaddr = 'calcarbondash@gmail.com'
 toaddrs = 'tucker.willsie@cpisf.org'
 if errorlist == []:
     msg = "\r\n".join([
-	"From: Calcarbondash@gmail.com",
-	"To: Tucker.willsie@cpisf.org; dario@cpisf.org",
-	"Subject: Status of upload V13 Dec 14",
-	"",
-	"Upload successful - todays upload was " +str(pricevar)+", "+str(timevar[0])+ ", "+str(volvar)+ ". The time of the pull was "+str(pulltime)
-	])
+    "From: Calcarbondash@gmail.com",
+    "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
+    "Subject: Status of upload V13 Dec 14",
+    "",
+    "Upload successful - todays upload was " +str(pricevar)+", "+str(timevar[0])+ ", "+str(volvar)+ ". The time of the pull was "+str(pulltime)
+    ])
 else:
     msg = "\r\n".join([
-	"From: Calcarbondash@gmail.com",
-	"To: Tucker.willsie@cpisf.org; dario@cpisf.org",
-	"Subject: Status of upload V13 Dec 14",
-	"",
-	"Upload error - The time of the pull was "+str(pulltime)+" and the error was: "+errorstring
-	])
+    "From: Calcarbondash@gmail.com",
+    "To: Tucker.willsie@cpisf.org; dario@cpisf.org",
+    "Subject: Status of upload V13 Dec 14",
+    "",
+    "Upload error - The time of the pull was "+str(pulltime)+" and the error was: "+errorstring
+    ])
 
 #credentials
 username = 'CalCarbonDash'
